@@ -17,6 +17,14 @@ for path in lib_pathes:
 # t.eval('puts $auto_path')
 import os
 current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# 解決 Spirent 102 字元路徑限制問題：預先建立 C:/temp/stc_results 短路徑
+stc_temp_dir = "C:/temp/stc_results"
+try:
+	os.makedirs(stc_temp_dir, exist_ok=True)
+except Exception:
+	pass
+
 tool_tcl_path = os.path.join(current_dir, 'tool.tcl').replace('\\', '/')
 tclsh.eval(f'source "{tool_tcl_path}"')
 tclsh.eval('Init')

@@ -4,6 +4,20 @@ proc Init {} {
     # Retrieve and display the current API version.
     puts "SpirentTestCenter version:\
           [stc::get system1 -Version]"
+    
+    # 解決 Spirent 102 字元路徑限制問題：將結果輸出目錄強制重定向至短路徑 C:/temp/stc_results
+    catch {
+        set resDir "C:/temp/stc_results"
+        if {![file exists $resDir]} {
+            file mkdir $resDir
+        }
+        set resOpt [stc::get system1 -children-ResultOptions]
+        if {$resOpt ne ""} {
+            stc::config $resOpt -ResultDir $resDir
+            stc::apply
+            puts "Spirent ResultDir set to: $resDir"
+        }
+    }
 }
 
 proc ListTestModuleInfo {mgrHandleList} {
@@ -236,19 +250,36 @@ proc Generator {port BurstSize Duration DurationMode FixedLoad LoadUnit Scheduli
 ######################################
 ###subscirbe results to Excel file
 ######################################
+proc ensure_stc_result_dir {} {
+    catch {
+        set resDir "C:/temp/stc_results"
+        if {![file exists $resDir]} {
+            file mkdir $resDir
+        }
+        # 關鍵：將 Tcl 當前工作目錄切換至短路徑，徹底根除 Spirent "current base result path exceeded 102 chars"
+        cd $resDir
+        set resOpt [stc::get system1 -children-ResultOptions]
+        if {$resOpt ne ""} {
+            stc::config $resOpt -ResultDir $resDir
+            stc::apply
+        }
+    }
+}
+
 proc ResultSubscribe_Rx {project filename} {
     puts "Subscribing to results..."
+    ensure_stc_result_dir
     set sbResultRx [stc::subscribe -Parent $project \
                         -ConfigType Analyzer \
                         -resulttype AnalyzerPortResults \
                         -filenameprefix $filename]
     puts "\tResults($sbResultRx) subscription complete"
     stc::apply
-    # puts "Configuration applied successfully"
     return $sbResultRx
 }
 proc ResultSubscribe_Tx {project filename} {
-     set sbResultTx [stc::subscribe -Parent $project \
+    ensure_stc_result_dir
+    set sbResultTx [stc::subscribe -Parent $project \
                     -ConfigType Generator \
                     -ResultType GeneratorPortResults \
                     -FilenamePrefix $filename \
@@ -258,7 +289,8 @@ proc ResultSubscribe_Tx {project filename} {
     return $sbResultTx
 }
 proc ResultSubscribe_Rxstreams {project filename} {
-     set sbDetailedRx [stc::subscribe -Parent $project \
+    ensure_stc_result_dir
+    set sbDetailedRx [stc::subscribe -Parent $project \
                     -ConfigType StreamBlock \
                     -ResultType RxStreamSummaryResults \
                     -FilenamePrefix $filename \
