@@ -10,7 +10,7 @@ setup(
         "pyserial>=3.5",
         "icmplib>=3.0.3",
         "pysnmp>=4.4.12,<5.0.0",
-        "pyasn1>=0.4.8",
+        "pyasn1>=0.4.8,<0.5.0",
         "pycryptodomex>=3.18.0",
     ],
     extras_require={
