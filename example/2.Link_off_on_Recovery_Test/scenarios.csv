@@ -1,0 +1,5 @@
+# 說明: 執行雙向測試時，Port0 與 Port1 為雙向互打發包，PortTX 與 PortRX 不參考 (僅供單向測試使用)
+Scenario,Port0,Port1,PortTX,PortRX,Path
+1,8/15,8/16,port0,port1,1
+2,8/15,8/16,port0,port1,2
+3,8/15,8/16,port0,port1,3

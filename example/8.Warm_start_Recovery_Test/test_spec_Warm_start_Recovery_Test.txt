@@ -1,0 +1,45 @@
+# ==========================================
+# 測試腳本需求填寫表 (test_spec.txt)
+# ==========================================
+
+[腳本名稱]
+名稱: Warm Start 恢復與 Topology Change/Back 測試
+
+[Phase 1] 參數蒐集與初始化
+  1.1 「執行次數」、「topology change 等待延遲時間」、「topology back 等待延遲時間」、「選擇測試場景（單選/多選/預設全部）」
+  1.2 選擇並讀取測試參數表。
+[Phase 2] 儀器與環境配置 (Spirent & Serial)
+  2.1 配置 Spirent TestCenter 預約 Port 並建立 Stream。
+[Phase 3] 自動化測試迴圈
+  對於所選的各個 Scenario 進行以下迴圈測試：
+  3.1 ping DUT ，若失敗則跳出迴圈
+  3.2 telnet 登入DUT，若失敗則跳出迴圈
+  3.3 port [TX] 持續打單向封包
+  3.4 等待 1 秒流量穩定 (time sleep 1s)
+  3.5 telnet 發送 "re" 指令，執行warm start
+  3.6 等待使用者定義的「topology change 等待延遲時間」
+  3.7 停止流量 (Stop Traffic)，並獲取數據並判定：
+      - 換算掉包數量 (Port[TX] Tx - Port[RX] Rx ) ，並記錄至日誌
+  3.8 清除結果統計數據
+  3.9 port [TX] 持續打單向封包
+  3.10 等待使用者定義的「topology back  等待延遲時間」
+  3.11 停止流量 (Stop Traffic)，並獲取數據並判定：
+      - 換算掉包數量 (Port[TX] Tx - Port[RX] Rx ) ，並記錄至日誌
+  3.12 清除telnet session ，並等候1s
+  3.13 清除結果統計數據，進入下一輪。
+
+[參數表檔案]
+scenarios.csv
+
+[參數表內容 (CSV 格式)]
+Scenario,Port0,Port1,PortTX,PortRX,warm start DUT IP
+1,8/2,8/4,port0,port1,10.0.17.101
+2,8/2,8/4,port0,port1,10.0.17.103
+3,8/2,8/4,port0,port1,10.0.18.101
+4,8/2,8/4,port0,port1,10.0.18.102
+5,8/2,8/4,port0,port1,10.0.19.106
+6,8/2,8/4,port0,port1,10.0.19.102
+7,8/2,8/4,port0,port1,10.0.20.109
+8,8/2,8/4,port0,port1,10.0.20.108
+9,8/2,8/4,port0,port1,10.0.21.101
+10,8/2,8/4,port0,port1,10.0.21.103

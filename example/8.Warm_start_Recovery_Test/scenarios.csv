@@ -1,0 +1,11 @@
+Scenario,Port0,Port1,PortTX,PortRX,warm start DUT IP
+1,8/2,8/4,port0,port1,10.0.17.101
+2,8/2,8/4,port0,port1,10.0.17.103
+3,8/2,8/4,port0,port1,10.0.18.101
+4,8/2,8/4,port0,port1,10.0.18.102
+5,8/2,8/4,port0,port1,10.0.19.106
+6,8/2,8/4,port0,port1,10.0.19.102
+7,8/2,8/4,port0,port1,10.0.20.109
+8,8/2,8/4,port0,port1,10.0.20.108
+9,8/2,8/4,port0,port1,10.0.21.101
+10,8/2,8/4,port0,port1,10.0.21.103

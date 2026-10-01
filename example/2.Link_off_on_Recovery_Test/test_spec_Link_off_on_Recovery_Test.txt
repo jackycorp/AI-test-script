@@ -1,0 +1,32 @@
+# ==========================================
+# 測試腳本需求填寫表 (test_spec.txt)
+# ==========================================
+
+[腳本名稱]
+名稱: Link Off/On 恢復與 Topology Change/Back 測試
+
+測試流程說明：
+[Phase 1] 參數蒐集與初始化
+  1.1 輸入制具 COM Port、執行次數、Link Off/On 觀察時間及測試場景。
+  1.2 從 CSV 讀取 Spirent Port、流量方向與制具 Path。
+[Phase 2] 儀器與制具配置
+  2.1 配置 Spirent TestCenter 並預約測試 Port。
+  2.2 使用 Serial 連線斷線制具，預設 COM2、115200 baud。
+[Phase 3] 自動化測試迴圈
+  3.1 清除統計並開始發送單向流量。
+  3.2 等待 3 秒，讓初始流量穩定。
+  3.3 發送 Link Off 指令 t{Path}x。
+  3.4 等待 Link Off 觀察時間後停止流量並計算丟包與恢復時間。
+  3.5 清除統計，重新送流量並等待 3 秒穩定。
+  3.6 發送 Link On 指令 t{Path}-。
+  3.7 等待 Link On 觀察時間後停止流量並計算丟包與恢復時間。
+  3.8 記錄結果、清除統計並進入下一輪。
+
+[參數表檔案]
+scenarios.csv
+
+[參數表內容 (CSV 格式)]
+Scenario,Port0,Port1,PortTX,PortRX,Path
+1,8/2,8/4,port0,port1,1
+2,8/2,8/4,port0,port1,2
+

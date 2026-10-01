@@ -1,0 +1,59 @@
+# ==========================================
+# Python 虛擬環境 (Virtual Environment)
+# ==========================================
+.venv/
+venv/
+ENV/
+env/
+
+# ==========================================
+# Python 快取與編譯檔 (Cache & Compiled)
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.spec
+build/
+dist/
+*.egg-info/
+
+# ==========================================
+# 測試產出、結果與封包 (Test Results & Logs)
+# ==========================================
+test result/
+result*.txt
+*.log
+**/log/
+captures/
+*.pcap
+*.pcapng
+
+# ==========================================
+# 測試儀器 (Spirent TestCenter) 自動產出目錄與數據
+# ==========================================
+**/Untitled/
+Untitled/
+generatorTx*
+analyzerRx*
+droppedRx*
+
+# ==========================================
+# 使用者自訂測試腳本區 (User Custom Scripts)
+# 允許自訂腳本留在本地，git pull 更新官方核心時不衝突
+# ==========================================
+my_scripts/*
+!my_scripts/.gitkeep
+!my_scripts/templates/
+!my_scripts/templates/**
+my_scripts/templates/**/__pycache__/
+my_scripts/templates/**/*.py[cod]
+
+# ==========================================
+# 編輯器與作業系統暫存 (IDE & OS Temporary)
+# ==========================================
+.vscode/
+.idea/
+*.swp
+*.bak
+Thumbs.db
+Desktop.ini

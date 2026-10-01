@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai_test_framework"
+version = "1.0.0"
+description = "AI Test Script Automation Framework"
+readme = "README.md"
+requires-python = ">=3.7"
+dependencies = [
+    "pyserial>=3.5",
+    "icmplib>=3.0.3",
+    "pysnmp>=4.4.12",
+]

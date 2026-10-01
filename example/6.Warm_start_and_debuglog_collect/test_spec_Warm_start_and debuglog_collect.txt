@@ -1,0 +1,108 @@
+# ==========================================
+# 測試腳本需求填寫表 (test_spec.txt)
+# ==========================================
+
+[腳本名稱]
+名稱: 定期Warm Start 並採集log
+
+[Phase 1] 參數蒐集與初始化
+  1.1 提示輸入測試參數：
+      - 「warm start 執行次數」(整數)
+      - 「採集 log 間隔 (分鐘)」(數值，支援小數如 0.5 代表 30 秒，預設 0.5)
+      - 「warm start 間隔 (分鐘)」(數值)
+      - 「DUT 登入帳號」(字串，預設 admin) 與「登入密碼」(字串，預設 moxa)
+      - 「選擇測試場景」(支援單選 / 多選 / 直接 Enter 預設全部)
+  1.2 選擇並讀取測試參數表 (scenarios.csv)。
+
+[Phase 2] 變數初始化與環境配置
+  2.1 宣告並初始化狀態 Flag：
+      - Flag_Scenario = True   (預設 True，程式啟動時先執行第一輪 log 採集)
+      - Flag_warmstart = False (預設 False，達 warm start 間隔才觸發)
+      - Flag_clear_log = True  (預設 True，僅第一輪採集前清除歷史 log)
+  2.2 初始化基準時間戳記與計數器：
+      - Time_Scenario = 當前時間
+      - Time_WarmStart = 當前時間
+      - warm_start_count = 0 (累計完成次數)
+  2.3 建立本地 log 資料夾（每次執行於 log 目錄下建立獨立子資料夾，如 log/<日期時間>/），供存放本次各輪日誌記錄。
+
+[Phase 3] 自動化測試迴圈
+  3.1 終止條件判定：
+      - 檢查 warm_start_count 是否已達到「warm start 執行次數」。
+      - 若已達到則結束測試並產出總結。
+
+  3.2 狀態判定與流程分流：
+      - 判定 Flag_Scenario 或 Flag_warmstart 任意 Flag 為 True：
+        -> 進入 3.3「執行動作迴圈」
+      - 若兩者皆為 False：
+        -> 跳至 3.4「時間間隔判定」
+
+  3.3 「執行動作迴圈」動作：
+      3.3.1 更新執行時間基準與計數器：
+          - 更新 Time_Scenario = 當前時間
+          - 若 Flag_warmstart == True：warm_start_count 累計 +1，更新 Time_WarmStart = 當前時間
+
+      3.3.2 輪巡執行所有選定之測試場景 (Scenario / DUT)：
+          - 步驟 A: Ping 檢查 DUT。若失敗則記錄錯誤並換下一個 Scenario。
+          - 步驟 B: Telnet 登入 DUT。若登入失敗則記錄錯誤並換下一個 Scenario。
+                    (若所有 DUT 皆無法連線，將於巡檢完後自動進入 3.4)
+          - 步驟 C: 依據 Flag 狀態對 DUT 下達 CLI 指令（各指令間隔 1 秒，記錄於「log_WS<次數>_sc<ID>_<MMDD_HHMMSS>.txt」，例如 log_WS0_sc1_0916_111500.txt）：
+              [基礎指令 (每次登入必執行)]
+              - terminal length 0
+
+              [歷史日誌清除 (僅當 Flag_clear_log 為 True 時執行)]
+              - clear logging event-log
+
+              [進入工程除錯模式 (僅當 Flag_clear_log 或 Flag_Scenario 為 True 時執行)]
+              - moxaie terminal
+              - clear logging debug-log (Flag_clear_log 為 True 時執行)
+
+              [狀態與日誌採集 (當Flag_Scenario 或Flag_warmstart 為 True 時執行)]
+              - show logging debug-log
+              - show memory info
+              - show memory kernel
+              - show thread info
+              - show stack info
+              - exit (退出 moxaie 模式回一般模式)
+              - show logging event-log
+
+              [設備重開機 (僅當 Flag_warmstart 為 True 時執行)]
+              - re
+              - Y
+
+          - 步驟 D: 清除並關閉該 DUT 之 Telnet session。
+
+      3.3.3 Scenario 全部輪巡完畢後處理：
+          - 重置三組 Flag 為 False：
+              - Flag_Scenario = False
+              - Flag_warmstart = False
+              - Flag_clear_log = False (確保清除 log 僅在第一輪執行一次)
+          - 退出「執行動作迴圈」。
+
+  3.4 時間間隔判定 (Timer Polling Check)：
+      - 判定採集 log 間隔：
+        若 (當前時間 - Time_Scenario) >= 「採集 log 間隔」，則設定 Flag_Scenario = True
+      - 判定 warm start 間隔：
+        若 (當前時間 - Time_WarmStart) >= 「warm start 間隔」，則設定 Flag_warmstart = True
+      - 若任一 Flag 變更為 True，將當時時間與變更資訊記錄至 result.txt
+
+  3.5 輪詢間隔等候：
+      - 固定等候 30 秒後，返回 3.1 進行下一輪判定。
+
+
+[參數表檔案]
+scenarios.csv
+
+[參數表內容 (CSV 格式)]
+Scenario,warm start DUT IP
+1,10.0.17.102
+2,10.0.17.103
+3,10.0.17.101
+4,10.0.18.102
+5,10.0.18.101
+6,10.0.19.102
+7,10.0.19.106
+8,10.0.20.108
+9,10.0.20.109
+10,10.0.21.103
+11,10.0.21.101
+12,10.0.21.102

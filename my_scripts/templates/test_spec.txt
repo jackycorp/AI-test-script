@@ -1,0 +1,32 @@
+# ==========================================
+# 測試腳本需求填寫表 (test_spec.txt)
+# 填寫完成後可直接複製本檔案內容貼給 AI 生成測試腳本
+# ==========================================
+
+[腳本名稱]
+test_my_feature.py
+
+[Phase 1] 參數蒐集與初始化
+1.1 提示輸入：執行次數、等待時間、目標 IP / COM 埠
+1.2 讀取測試參數表 scenarios.csv
+
+[Phase 2] 儀器與環境配置
+2.1 配置儀器連線 (如 Spirent TestCenter 預約 Port 與建立 Stream，選用)
+2.2 初始化 Serial 或 Telnet 連線 DUT 並發送前置穩定指令
+2.3 建立 test result 輸出日誌標頭 (test result/<測試名稱>/result.txt)
+
+[Phase 3] 自動化測試流程
+3.1 Ping DUT 確認設備連線狀態
+3.2 發送測試流量或下達測試指令
+3.3 等待收斂延遲時間
+3.4 獲取測試數據並判定測試結果 (計算掉包或檢查回應字串)
+3.5 記錄測試結果至 test result 日誌與終端機
+3.6 清除統計或重置連線，進入下一輪
+
+[參數表檔案]
+scenarios.csv
+
+[參數表內容 (CSV 格式範例)]
+Scenario,Port0,Port1,PortTX,PortRX,DUT_IP
+1,8/2,8/4,port0,port1,10.0.17.101
+2,8/2,8/4,port0,port1,10.0.17.103

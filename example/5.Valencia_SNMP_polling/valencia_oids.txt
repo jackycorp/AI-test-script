@@ -1,0 +1,67 @@
+# ==============================================================================
+# Valencia SNMP OID 配置表 (valencia_oids.txt)
+#
+# 說明：
+# 1. 支援 '#' 開頭之註解行、空白行，以及行尾 '#' 註解。
+# 2. 節區標籤 [SECTION_NAME] 區分 5 大 SNMP 動作類型：
+#    - [STARTUP_GET]       : 列車通電啟動時觸發之單次 SNMP Get 查詢 (含 USM 狀態計數器)
+#    - [MULTI_VARBIND_GET] : 列車開機期間持續週期性執行之 SNMP Get Multi-Varbind (單一 PDU 合併發送，對應 Toby 樣板 D)
+#    - [WALK]              : 列車開機期間持續週期性執行之 SNMP Walk / GetNext (依序深度遍歷，含 LLDP remote table)
+#    - [GETBULK]           : 司機台 HMI 軟體按鈕手動觸發之 SNMP GetBulk 表格查詢 (含 FDB 全表走訪與 LLDP 表格)
+#    - [SET]               : 司機台 HMI 軟體按鈕手動觸發之 SNMP Set 安全性寫入驗證
+# 3. 每行欄位格式: OID, 參數名稱/功能描述
+#    其中 'P' 代表待測設備私有 MIB 前綴：1.3.6.1.4.1.8691.7.<HW_ID>
+# ==============================================================================
+
+[STARTUP_GET]
+# 通電啟動單次查詢 OID
+P.1.89.1.0, startup_1_89_1
+P.1.89.3.0, startup_1_89_3
+P.1.89.2.0, startup_1_89_2
+1.3.6.1.6.3.15.1.1.4.0, usmStatsUnknownEngineIDs #現場抓包分析得到
+1.3.6.1.6.3.15.1.1.2.0, usmStatsNotInTimeWindows #現場抓包分析得到
+
+[MULTI_VARBIND_GET]
+# 持續週期性 Multi-Varbind 查詢（每次迭代發送 1 個指令，單一 PDU 同時包含 14 個純量 OID，對應 Toby 報告樣板 D）
+P.1.53.0, cpuLoading5s
+P.1.54.0, cpuLoading30s
+P.1.55.0, cpuLoading300s
+P.1.59.0, memoryUsage
+P.1.4.0, firmwareVersion
+1.3.6.1.2.1.1.5.0, sysName
+P.1.16.4.0, activeProtocolOfRedundancy
+P.1.16.5.1.10.0, brokenStatusRing1
+P.1.16.2.14.0, turboRingBrokenStatus
+P.1.16.7.1.8.0, drcBrokenStatusRing
+P.1.16.5.1.7.0, rdnt1stPortStatusRing1
+P.1.16.5.1.6.0, rdnt1stPortRing1
+P.1.16.5.1.9.0, rdnt2ndPortStatusRing1
+P.1.16.5.1.8.0, rdnt2ndPortRing1
+
+[WALK]
+# 持續週期性 Walk 查詢（包含 per-port 狀態/錯誤計數與 LLDP remote table 深度走訪）
+P.1.10.3.1.3, monitorSpeed
+P.1.16.2.3.1.2, turboRingPortStatus
+P.1.10.3.1.5, monitorTraffic
+P.1.9.1.1.3, portEnable
+P.1.10.3.1.2, monitorLinkStatus
+1.3.6.1.2.1.2.2.1.14, ifInErrors
+1.3.6.1.2.1.2.2.1.20, ifOutErrors
+1.0.8802.1.1.2.1.4.1.1.9, lldpRemSysName
+1.0.8802.1.1.2.1.4.1.1.10, lldpRemSysDesc #現場抓包分析得到
+1.0.8802.1.1.2.1.4.1.1.11, lldpRemSysCapSupported #現場抓包分析得到
+1.0.8802.1.1.2.1.4.1, lldpRemTable # SQA自行增加 (壓力測試)
+P.1.40.3.1.2, OMTS_1_40_3_1_2
+1.3.6.1.2.1.17.4.3.1.2, dot1dTpFdbPort # SQA自行增加 (壓力測試)
+
+[GETBULK]
+# 司機台 HMI 手動按鈕觸發（包含 FDB MAC Table 全表走訪與 LLDP Remote Table 走訪，對應 Toby 報告樣板 E 與 F）
+1.3.6.1.2.1.2.2.1.8, ifOperStatus
+1.3.6.1.2.1.17.4.3.1.1, dot1dTpFdbAddress
+1.3.6.1.2.1.17.4.3.1.2, dot1dTpFdbPort
+1.3.6.1.2.1.17.4.3.1.3, dot1dTpFdbStatus #現場抓包分析得到
+1.0.8802.1.1.2.1.4.1.1.9, lldpRemSysName #現場抓包分析得到
+
+[SET]
+# 司機台 HMI 手動按鈕觸發（安全性寫回驗證）
+P.1.9.1.1.3, portEnable

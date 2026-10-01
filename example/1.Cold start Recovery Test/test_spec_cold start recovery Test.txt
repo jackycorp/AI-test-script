@@ -1,0 +1,35 @@
+# ==========================================
+# 測試腳本需求填寫表 (test_spec.txt)
+# ==========================================
+
+[腳本名稱]
+名稱: Cold start Recovery Test
+
+[Phase 1] 參數蒐集與初始化
+  1.1 「執行次數」、「power down等待延遲時間」、「power up 等待延遲時間」、「選擇測試場景（單選/多選/預設全部）」、「輸入制具 COM Port」
+  1.2 選擇並讀取測試參數表。
+[Phase 2] 儀器與環境配置 (Spirent & Serial)
+  2.1 配置 Spirent TestCenter 預約 Port 並建立 Stream。
+  2.2 使用 Serial 連線斷線制具，預設 COM2、115200 baud。
+[Phase 3] 自動化測試迴圈
+  對於所選的各個 Scenario 進行以下迴圈測試：
+  3.1 port [TX] 持續打單向封包
+  3.2 COM port 發送power off 指令dc{channel} off
+  3.3 等待使用者定義的「power down等待延遲時間」
+  3.4 停止流量 (Stop Traffic)，並獲取數據並判定：
+      - 換算掉包數量 (Port[TX] Tx - Port[RX] Rx ) ，並記錄至日誌
+  3.5 清除結果統計數據
+  3.6 port [TX] 持續打單向封包 
+  3.7 COM port 發送power on 指令dc{channel} on
+  3.8 等待使用者定義的「power up 等待延遲時間」
+  3.9 停止流量 (Stop Traffic)，並獲取數據並判定：
+      - 換算掉包數量 (Port[TX] Tx - Port[RX] Rx ) ，並記錄至日誌
+  3.10 清除結果統計數據，進入下一輪。
+
+[參數表檔案]
+scenarios.csv
+
+[參數表內容 (CSV 格式)]
+Scenario,Port0,Port1,PortTX,PortRX,channel
+1,8/2,8/4,port0,port1,1
+

@@ -1,0 +1,6 @@
+Scenario,Port0,Port1,PortTX,PortRX,channel
+1,8/2,8/4,port0,port1,1
+2,8/2,8/4,port0,port1,7
+3,8/2,8/4,port0,port1,4
+4,8/2,8/4,port0,port1,5
+5,8/2,8/4,port0,port1,6
