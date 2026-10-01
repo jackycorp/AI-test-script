@@ -10,5 +10,12 @@ setup(
         "pyserial>=3.5",
         "icmplib>=3.0.3",
         "pysnmp>=4.4.12",
+        "pyasn1>=0.4.8",
+        "pycryptodomex>=3.18.0",
     ],
+    extras_require={
+        "packet_analysis": [
+            "scapy>=2.5.0",
+        ],
+    },
 )
