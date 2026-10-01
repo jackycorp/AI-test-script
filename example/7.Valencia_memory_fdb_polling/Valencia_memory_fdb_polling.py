@@ -69,6 +69,13 @@ while current_dir_check and os.path.dirname(current_dir_check) != current_dir_ch
 if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 
+# 虛擬環境自動跳轉防呆機制 (若以全域 Python 啟動，自動切換至專案 .venv 執行)
+ROOT_DIR = WORKSPACE_ROOT
+_venv_py = os.path.join(WORKSPACE_ROOT, ".venv", "Scripts", "python.exe")
+if os.path.exists(_venv_py) and os.path.normcase(sys.executable) != os.path.normcase(_venv_py):
+    import subprocess
+    sys.exit(subprocess.run([_venv_py] + sys.argv).returncode)
+
 # 引入共用通訊工具（遵循 SKILL.md 工具箱按需裝配原則，本測試純使用 SNMP 與 Ping）
 try:
     from utils.comm_helper import get_iteration_count, get_delay_time, Pingfunc, get_result_log_path

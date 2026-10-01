@@ -114,6 +114,16 @@
      ```
    - ⚠️ **參數表 (`scenarios.csv`) 候選路徑遍歷**：
      若腳本需要讀取 CSV 測試參數表，必須具備多路徑搜尋候選機制（優先搜尋腳本所在目錄 `SCRIPT_DIR`，次之為工作目錄 `cwd`、上層目錄或工作區根目錄），保證腳本移動到任何子目錄時均能自動找到參數表。
+15. **虛擬環境自動跳轉原則 (Auto Virtual Environment Trampoline Principle)**：
+   - ⚠️ **全自動偵測與重啟機制 (免手動 activate)**：
+     為了讓測試人員無論在何種終端機或目錄下，只要直接輸入 `python 腳本.py` 均能 100% 成功執行，所有測試腳本在動態定位到專案根目錄後、匯入任何第三方套件之前，必須加入自動跳轉檢查。若當前直譯器非專案 `.venv` 且專案根目錄存在 `.venv\Scripts\python.exe`，應自動透過 `subprocess.run` 重新拉起自身並轉移 exit code：
+     ```python
+     # 虛擬環境自動跳轉防呆機制 (若以全域 Python 啟動，自動切換至專案 .venv 執行)
+     _venv_py = os.path.join(ROOT_DIR, ".venv", "Scripts", "python.exe")
+     if os.path.exists(_venv_py) and os.path.normcase(sys.executable) != os.path.normcase(_venv_py):
+         import subprocess
+         sys.exit(subprocess.run([_venv_py] + sys.argv).returncode)
+     ```
 
 ---
 
@@ -151,14 +161,22 @@ from typing import TYPE_CHECKING
 # 動態向上搜尋包含 utils 的根目錄，確保無論放置於哪一層子目錄均能正常引入 utils
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 current_dir_check = SCRIPT_DIR
+ROOT_DIR = SCRIPT_DIR
 while current_dir_check and os.path.dirname(current_dir_check) != current_dir_check:
     if os.path.exists(os.path.join(current_dir_check, "utils", "comm_helper.py")):
+        ROOT_DIR = current_dir_check
         if current_dir_check not in sys.path:
             sys.path.insert(0, current_dir_check)
         break
     current_dir_check = os.path.dirname(current_dir_check)
 if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
+
+# 虛擬環境自動跳轉防呆機制 (若以全域 Python 啟動，自動切換至專案 .venv 執行)
+_venv_py = os.path.join(ROOT_DIR, ".venv", "Scripts", "python.exe")
+if os.path.exists(_venv_py) and os.path.normcase(sys.executable) != os.path.normcase(_venv_py):
+    import subprocess
+    sys.exit(subprocess.run([_venv_py] + sys.argv).returncode)
 
 # 引入共用工具
 try:

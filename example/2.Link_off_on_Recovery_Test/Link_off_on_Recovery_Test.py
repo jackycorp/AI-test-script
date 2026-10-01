@@ -41,6 +41,12 @@ while current_dir_check and os.path.dirname(current_dir_check) != current_dir_ch
 if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 
+# 虛擬環境自動跳轉防呆機制 (若以全域 Python 啟動，自動切換至專案 .venv 執行)
+_venv_py = os.path.join(ROOT_DIR, ".venv", "Scripts", "python.exe")
+if os.path.exists(_venv_py) and os.path.normcase(sys.executable) != os.path.normcase(_venv_py):
+    import subprocess
+    sys.exit(subprocess.run([_venv_py] + sys.argv).returncode)
+
 # 引入共用工具
 try:
     import serial

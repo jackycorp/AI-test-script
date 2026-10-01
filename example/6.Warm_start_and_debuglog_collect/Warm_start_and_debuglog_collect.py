@@ -109,6 +109,12 @@ while current_dir_check and os.path.dirname(current_dir_check) != current_dir_ch
 if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 
+# 虛擬環境自動跳轉防呆機制 (若以全域 Python 啟動，自動切換至專案 .venv 執行)
+_venv_py = os.path.join(ROOT_DIR, ".venv", "Scripts", "python.exe")
+if os.path.exists(_venv_py) and os.path.normcase(sys.executable) != os.path.normcase(_venv_py):
+    import subprocess
+    sys.exit(subprocess.run([_venv_py] + sys.argv).returncode)
+
 # 引入共用通訊工具（依按需裝配原則，本測試純使用 Telnet 與 Ping，毋須載入 Spirent 或 Serial）
 try:
     from utils.comm_helper import get_iteration_count, Pingfunc, comm_TELNET, get_result_dir, get_result_log_path

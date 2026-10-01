@@ -10,6 +10,7 @@
 AI_test_framework/                          <-- 專案根目錄
 │
 ├── .gitignore                              <-- [版控防線] 排除虛擬環境、測試結果、封包與個人自訂腳本
+├── AGENTS.md                               <-- [AI 開發規範] 鎖定 Git Push 授權、套件相依性與環境相容準則
 ├── README.md                               <-- [主說明書] 快速上手、目錄架構與執行/開發指南
 ├── SKILL.md                                <-- [開發規範] 核心 API 簽名規格表與禁止事項
 ├── requirements.txt                        <-- 相依套件清單 (pyserial, icmplib, pysnmp 等)
@@ -77,19 +78,16 @@ AI_test_framework/                          <-- 專案根目錄
 - *註：本步驟僅需在首次下載或套件更新時執行一次。*
 
 ### 步驟 3：命令列執行測試
-在專案根目錄開啟終端機（CMD 或 PowerShell），使用專案專屬的虛擬環境直譯器執行目標腳本：
+直接切換至目標測試資料夾，使用一般 `python` 指令執行即可：
 
 ```cmd
-.venv\Scripts\python.exe "example\8.Warm_start_Recovery_Test\Warm_start_Recovery_Test.py"
+cd "example\8.Warm_start_Recovery_Test"
+python Warm_start_Recovery_Test.py
 ```
 
-*(或者也可以先啟動環境再執行)*：
-```cmd
-call .venv\Scripts\activate
-python "example\8.Warm_start_Recovery_Test\Warm_start_Recovery_Test.py"
-```
-
-> **提示**：無論腳本位於 `example/` 底下多深層的子資料夾（如 `example\11.ARCC Test\...`），均可直接使用上述指令順暢執行。
+> **💡 免手動啟動虛擬環境 (內建自動跳轉防呆)**：  
+> 本專案所有腳本皆已內建「**虛擬環境自動跳轉防護**」。即便您未手動輸入 `activate`，腳本都會在背景自動偵測並切換至專屬 `.venv` 執行，徹底免除全域環境衝突！  
+> 無論腳本位於 `example/` 底下多深層的子資料夾（如 `example\11.ARCC Test\...`），均可直接以相同方式順暢執行。
 
 ### 步驟 4：查看測試結果 (集中與分階層管理)
 - 測試過程中產生的日誌與結果報告統一集中輸出至根目錄的 **`test result/<測試案例名稱>_result/result.txt`**。
@@ -124,9 +122,10 @@ python "example\8.Warm_start_Recovery_Test\Warm_start_Recovery_Test.py"
   3. **Phase 3**：自動化測試迴圈與 `try...finally` 資源妥善釋放。
 
 ### 步驟 4：執行與驗證
-在終端機中執行您自訂的腳本：
+切換至目錄並直接以 `python` 執行自訂腳本：
 ```cmd
-.venv\Scripts\python.exe "my_scripts\my_arcc_test.py"
+cd my_scripts
+python my_arcc_test.py
 ```
 測試結果將自動存於 `test result/my_scripts/result.txt`。
 
@@ -143,3 +142,4 @@ python "example\8.Warm_start_Recovery_Test\Warm_start_Recovery_Test.py"
 
 1. **`utils/` 唯讀原則**：請勿直接修改 `utils/` 中的實體檔案，以確保團隊所有人共享的基礎通訊庫維持穩定與向後相容。
 2. **多層資料夾支援**：所有官方 `example/` 及新架構腳本均已內建模組定位邏輯，即使未來在 `example/` 下細分多層資料夾（例如 `example/Subgroup/TestA/test.py`），均可直接被正確載入執行。
+3. **環境自動跳轉防護**：全專案腳本皆內建 `.venv` 自動跳轉機制，即使直接以一般 `python` 啟動，也會自動轉入專案隔離沙盒，徹底免除全域套件衝突。
