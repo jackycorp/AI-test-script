@@ -70,7 +70,6 @@ AI_test_framework/                          <-- 專案根目錄
 ### 步驟 1：下載專案
 - **方法 A**：使用 Git 指令 `git clone <儲存庫網址>`。
 - **方法 B**：至 GitLab 頁面點擊 **Code ➔ Download ZIP** 並解壓縮。
-- **方法 C（進階，僅抓單一測試）**：使用 Git Sparse-checkout 只檢出 `utils` 與目標案例資料夾。
 
 ### 步驟 2：一鍵建立專屬環境
 - 在專案根目錄找到 **`setup.bat`**，**滑鼠點擊兩下執行**。
@@ -85,9 +84,7 @@ cd "example\8.Warm_start_Recovery_Test"
 python Warm_start_Recovery_Test.py
 ```
 
-> **💡 免手動啟動虛擬環境 (內建自動跳轉防呆)**：  
-> 本專案所有腳本皆已內建「**虛擬環境自動跳轉防護**」。即便您未手動輸入 `activate`，腳本都會在背景自動偵測並切換至專屬 `.venv` 執行，徹底免除全域環境衝突！  
-> 無論腳本位於 `example/` 底下多深層的子資料夾（如 `example\11.ARCC Test\...`），均可直接以相同方式順暢執行。
+*提示：本專案所有腳本皆已內建虛擬環境自動跳轉機制，執行時會自動切換至專屬 `.venv`，無需手動輸入 `activate` 即可直接執行。*
 
 ### 步驟 4：查看測試結果 (集中與分階層管理)
 - 測試過程中產生的日誌與結果報告統一集中輸出至根目錄的 **`test result/<測試案例名稱>_result/result.txt`**。
@@ -97,39 +94,32 @@ python Warm_start_Recovery_Test.py
 
 ---
 
-## 三、 開發者指南：依需求自訂測試腳本 (Developer 指南)
+## 三、 開發者指南：AI 輔助開發三步驟 (Developer 指南)
 
-若您需要根據特定產品或需求撰寫新的測試腳本：
+本專案採用「人負責定義規格需求，AI 負責依規範編寫程式」的高效協作模式。專案根目錄下的 **`SKILL.md`** 是專供 AI 輔助工具（如 Antigravity、Gemini CLI 等）閱讀的行為準則與 API 規範知識庫，開發者無需自行研讀細節，只需依照以下三個步驟即可快速完成新測試程式的開發：
 
-### 步驟 1：初始化開發環境
-- 同樣先雙擊執行 **`setup.bat`**。
-- `setup.bat` 會以可編輯模式（`pip install -e .`）將 `utils/` 註冊進環境中。這意味著您在專案的**任何子目錄下**撰寫程式碼，都能直接引用：
-  ```python
-  from utils.comm_helper import get_com_port, comm_CMD, check_ping
+### 步驟 1：設計測試規格需求表 (`test_spec.txt`)
+- 複製 **`my_scripts/templates/test_spec.txt`** 作為需求範本（可放置於 `my_scripts/` 或 `example/<新測試名稱>/` 目錄下）。
+- 根據您的實際測試需求填寫規格，例如：
+  - 需要使用的通訊方式（Serial / Telnet / SNMP / Ping / Spirent 儀器等）
+  - 測試流程三階段（Phase 1 參數輸入、Phase 2 環境連線、Phase 3 測試步驟與判定條件）
+
+### 步驟 2：對 AI 說明並生成程式碼
+- 將設計好的需求表提供給 AI，並指示 AI 依據 `SKILL.md` 規範撰寫測試程式。
+- **對話 Prompt 範例**：
+  > 「請根據專案根目錄下的 `SKILL.md` 規範，參考我的 `test_spec.txt` 規格需求，幫我撰寫符合架構的自動化測試程式 `my_test.py`。」
+- AI 將會嚴格遵照 `SKILL.md` 的三階段結構、API 呼叫白名單、集中日誌路徑與自動跳轉機制產出完整可執行的程式碼。
+
+### 步驟 3：測試與驗證 AI 設計的程式
+- 切換至目錄並直接執行 AI 產出的腳本：
+  ```cmd
+  python my_test.py
   ```
+- 檢視終端機輸出與 `test result/<測試名稱>_result/result.txt` 中的日誌，驗證測試邏輯與判定結果是否符合預期。
 
-### 步驟 2：閱讀開發規範與 API 規格 (`SKILL.md`)
-- 在撰寫前，請務必詳細閱讀專案根目錄下的 **`SKILL.md`**。
-- 裡面定義了所有 `utils/` 模組的完整函式簽名、禁止盲猜的調用禁忌與三階段開發原則。
+---
 
-### 步驟 3：建立並撰寫新腳本
-- 直接從 **`my_scripts/templates/template.py`** 複製一份到 **`my_scripts/`** 目錄下。
-- 將其重命名（例如 `my_scripts/my_arcc_test.py`）。
-- 若需定義新測試需求請 AI 編寫，可複製並參考 **`my_scripts/templates/test_spec.txt`**。
-- 依據 `template.py` 的標準三階段骨架撰寫邏輯：
-  1. **Phase 1**：讀取參數表與防呆輸入。
-  2. **Phase 2**：環境與連線配置（Serial / Telnet / 儀器），初始化集中輸出路徑。
-  3. **Phase 3**：自動化測試迴圈與 `try...finally` 資源妥善釋放。
-
-### 步驟 4：執行與驗證
-切換至目錄並直接以 `python` 執行自訂腳本：
-```cmd
-cd my_scripts
-python my_arcc_test.py
-```
-測試結果將自動存於 `test result/my_scripts/result.txt`。
-
-### 步驟 5：未來同步核心更新 (升級零衝突)
+### 未來同步核心更新 (升級零衝突)
 - 當專案擁有者更新了 `utils/` 底層功能或發布了新版官方 example 時，您只需在專案根目錄執行：
   ```cmd
   git pull

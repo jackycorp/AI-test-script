@@ -3,7 +3,7 @@
 # ==========================================
 
 [腳本名稱]
-名稱: 環境與核心模組功能驗證程式 (0.Enviroment_test.py)
+名稱: 環境與核心模組功能驗證程式 (0.Enviroment_test.py / Enviroment_test.py)
 用途: 供使用者在全新電腦完成 git pull 與 setup.bat 後，逐項或批次檢驗 setup.py 宣告之所有套件及 Spirent 儀器控制功能是否皆能正常調用。
 
 ---
@@ -13,24 +13,22 @@
 | 編號 | 測試模組名稱 | 檢驗功能與測試方式 | 必要/可選 | 參數需求 |
 | :--- | :--- | :--- | :--- | :--- |
 | **1** | `utils` 專案核心共用庫 | 檢驗專案 `pip install -e .` 註冊是否正常，跨層級動態導入 `utils.comm_helper`、`utils.dictionary_parameters` 與集中式日誌 API (`get_result_dir`)。 | **核心必備** | 免參數 (自動檢驗) |
-| **2** | `icmplib` (網路檢測) | 調用 ICMP Ping 功能發送檢測封包，驗證網路探測模組運作正常。 | **核心必備** | 目標 IP (預設 127.0.0.1 或自訂 DUT IP) |
-| **3** | `pyserial` (串列通訊) | 調用 serial 模組掃描本機可用 COM Port，並嘗試開啟指定 COM Port 進行連線測試。 | **核心必備** | COM Port 名稱 (如 COM1、COM2，輸入 skip 略過實體開啟) |
-| **4** | `pysnmp` + `pyasn1` + `pycryptodomex` | 驗證 SNMP 引擎與 ASN.1 解析，對目標 IP 執行 SNMP Get 查詢 (如 sysDescr 1.3.6.1.2.1.1.1.0)。 | **核心必備** | 目標 IP (預設 127.0.0.1) 與 Community String (預設 public) |
-| **5** | `scapy` (封包分析與建構) | 構造並解析標準 Ethernet / IP / TCP 測試封包，驗證協定封包組裝功能。 | **選用套件** | 免參數 (自動驗證封包構造) |
-| **6** | `utils.pythontool` + `SpirentTestCenter` | 檢驗 Spirent TestCenter API 與 Tcl 核心，配置 1 Tx 與 1 Rx 進行流量發送、停止及統計接收檢驗。 | **儀器測試** | 機箱 IP (預設 10.123.38.202，輸入 skip 僅驗證 API 載入)、TX 埠口 (預設 1/1)、RX 埠口 (預設 1/2) |
+| **2** | `scapy` (封包分析與建構) | 構造並解析標準 Ethernet / IP / TCP 測試封包，驗證二/三/四層協定封包組裝與反解。 | **選用套件** | 免參數 (自動驗證封包構造) |
+| **3** | `icmplib` (網路檢測) | 調用 ICMP Ping 功能發送檢測封包，驗證網路探測模組運作正常。 | **核心必備** | 目標 IP (預設 127.0.0.1 或自訂 DUT IP) |
+| **4** | `pyserial` (串列通訊) | 調用 serial 模組掃描本機可用 COM Port，並嘗試開啟指定 COM Port 進行連線測試 (連線失敗嚴格判定 FAIL)。 | **核心必備** | COM Port 名稱 (如 COM1，輸入 skip 略過實體開啟) |
+| **5** | `utils.pythontool` + `SpirentTestCenter` | 檢驗 Spirent TestCenter API 與 Tcl 核心，配置 1 Tx 與 1 Rx 進行流量發送、停止及統計接收檢驗。 | **儀器測試** | 機箱 IP (預設 10.123.38.202，輸入 skip 僅驗證 API 載入)、TX 埠口 (預設 1/1)、RX 埠口 (預設 1/2) |
 
 ---
 
 [測試流程說明 (三階段結構)]
 
 [Phase 1] 參數蒐集與選單互動
-  1.1 顯示所有可用測試功能清單（1~6）。
-  1.2 提示使用者選擇測試項目（支援單選如: 2、多選如: 1,2,4,6、或直接 Enter 測試全部）。
+  1.1 顯示所有可用測試功能清單（1~5）。
+  1.2 提示使用者選擇測試項目（支援單選如: 2、多選如: 1,2,4、或直接 Enter 測試全部）。
   1.3 依據使用者選擇之功能項目，動態提示輸入所需參數：
-      - 若選 [2] 或 [4]：提示輸入目標測試 IP。
-      - 若選 [4]：提示輸入 SNMP Community 字串。
-      - 若選 [3]：掃描本機可用 COM 埠並提示輸入欲測試之 COM Port（輸入 skip 可略過實體開啟）。
-      - 若選 [6]：提示輸入 Spirent Chassis IP（輸入 skip 僅驗證 API 與 Tcl 引擎）、TX 埠口與 RX 埠口。
+      - 若選 [3]：提示輸入 Ping 測試目標 IP。
+      - 若選 [4]：掃描本機可用 COM 埠並提示輸入欲測試之 COM Port（輸入 skip 可略過實體開啟）。
+      - 若選 [5]：提示輸入 Spirent Chassis IP（輸入 skip 僅驗證 API 與 Tcl 引擎）、TX 埠口與 RX 埠口。
 
 [Phase 2] 環境預檢與日誌初始化
   2.1 初始化測試日誌檔案 (自動集中輸出至 test result/0.Enviroment_test_result/result.txt)。
@@ -38,6 +36,10 @@
 
 [Phase 3] 功能執行與結果報告
   3.1 依序執行所選定的模組測試，即時輸出檢驗過程與 Pass/Fail 狀態。
-      - 針對 Spirent 測試：採用延遲載入 (Lazy Import)，未勾選時不載入避免啟動延遲；執行時測試連線機箱、預約 1 Tx / 1 Rx 埠口、建立 StreamBlock 與 Generator、發送測試流量並驗收 RX 計數。
+      - Test 1 (utils)：驗證共用庫與集中路徑 API。
+      - Test 2 (scapy)：驗證封包建構與反解。
+      - Test 3 (icmplib)：驗證 Ping 發包與回應。
+      - Test 4 (pyserial)：掃描 COM 埠並嘗試開啟，若指定埠無法開啟則判定 FAIL。
+      - Test 5 (Spirent)：採用延遲載入 (Lazy Import)，未勾選時不載入避免啟動延遲；執行時測試連線機箱、預約 1 Tx / 1 Rx 埠口、建立 StreamBlock 與 Generator、發送測試流量並驗收 RX 計數。
   3.2 統計測試結果（總測試項目數、Pass 數、Fail 數）。
   3.3 將完整測試總結輸出至控制台與 result.txt。

@@ -4,7 +4,7 @@
 
 測試流程說明：
 [Phase 1] 參數蒐集與選單互動
-  1.1 顯示所有可用測試功能清單 (1~6)。
+  1.1 顯示所有可用測試功能清單 (1~5)。
   1.2 提示使用者選擇測試項目 (支援單選、多選、直接 Enter 預設全部)。
   1.3 依據使用者選擇之功能項目，動態提示輸入所需參數 (如 COM Port、目標 IP、Spirent 參數等)。
 [Phase 2] 環境預檢與日誌初始化
@@ -13,11 +13,10 @@
 [Phase 3] 模組功能檢驗與結果報告
   3.1 依序執行選定之模組功能測試：
       - Test 1: utils 核心共用庫導入與路徑檢驗
-      - Test 2: icmplib ICMP Ping 功能檢驗
-      - Test 3: pyserial 串口掃描與開啟檢驗
-      - Test 4: pysnmp + pyasn1 SNMP 引擎與查詢功能檢驗
-      - Test 5: scapy 網路封包建構與解碼檢驗 (選用套件)
-      - Test 6: Spirent TestCenter 儀器 1 Tx 1 Rx 打流與統計檢驗
+      - Test 2: scapy 網路封包建構與解碼檢驗 (選用套件)
+      - Test 3: icmplib ICMP Ping 功能檢驗
+      - Test 4: pyserial 串口掃描與開啟檢驗 (連接失敗嚴格判定 FAIL)
+      - Test 5: Spirent TestCenter 儀器 1 Tx 1 Rx 打流與統計檢驗
   3.2 統計測試結果並將完整總結日誌輸出至終端機與 result.txt。
 """
 
@@ -82,7 +81,7 @@ def log_and_print(msg: str, log_file: str):
 
 def test_utils_module(log_file: str) -> Tuple[bool, str]:
     """檢驗 1: 專案核心共用庫 (utils) 是否可正常匯入與調用"""
-    log_and_print("\n[測試 1/6] 檢驗 utils 核心共用庫...", log_file)
+    log_and_print("\n[測試 1/5] 檢驗 utils 核心共用庫...", log_file)
     try:
         import utils
         import utils.comm_helper as ch
@@ -101,140 +100,9 @@ def test_utils_module(log_file: str) -> Tuple[bool, str]:
         return False, err_msg
 
 
-def test_icmplib_module(target_ip: str, log_file: str) -> Tuple[bool, str]:
-    """檢驗 2: icmplib 是否能正常發送 ICMP Echo 封包並獲取回傳統計"""
-    log_and_print(f"\n[測試 2/6] 檢驗 icmplib 網路 Ping 功能 (目標 IP: {target_ip})...", log_file)
-    try:
-        import icmplib
-        log_and_print(f"  - icmplib 模組版本: {getattr(icmplib, '__version__', '未知')}", log_file)
-        
-        log_and_print(f"  - 正在向 {target_ip} 發送 Ping 測試封包...", log_file)
-        host_stat = icmplib.ping(target_ip, count=2, interval=0.5, timeout=1.5)
-        
-        if host_stat.is_alive:
-            detail = f"Ping 回應正常 (平均延遲: {host_stat.avg_rtt:.2f} ms, 丟包率: {host_stat.packet_loss * 100:.0f}%)"
-            log_and_print(f"  - {detail}", log_file)
-            return True, detail
-        else:
-            detail = f"主機無回應 (丟包率: 100%)，但 icmplib 封包發送引擎運作正常"
-            log_and_print(f"  - [資訊] {detail}", log_file)
-            return True, detail
-    except ImportError as e:
-        err_msg = f"找不到 icmplib 套件: {e}"
-        log_and_print(f"  [FAIL] {err_msg}", log_file)
-        return False, err_msg
-    except Exception as e:
-        err_msg = f"icmplib 執行異常: {e}"
-        log_and_print(f"  [FAIL] {err_msg}", log_file)
-        return False, err_msg
-
-
-def test_pyserial_module(com_port: str, log_file: str) -> Tuple[bool, str]:
-    """檢驗 3: pyserial 是否能正常調用並掃描/開啟串列埠"""
-    log_and_print(f"\n[測試 3/6] 檢驗 pyserial 串口通訊功能 (目標: {com_port})...", log_file)
-    try:
-        import serial
-        import serial.tools.list_ports
-        log_and_print(f"  - pyserial 模組版本: {getattr(serial, '__version__', '未知')}", log_file)
-        
-        detected_ports = [p.device for p in serial.tools.list_ports.comports()]
-        log_and_print(f"  - 本機偵測到之實體 COM Port: {detected_ports if detected_ports else '無'}", log_file)
-        
-        if not com_port or com_port.upper() == "SKIP":
-            status_desc = "pyserial 模組載入正常 (略過實體開啟測試)"
-            log_and_print(f"  - {status_desc}", log_file)
-            return True, status_desc
-            
-        log_and_print(f"  - 嘗試開啟 {com_port} (Baudrate: 115200)...", log_file)
-        try:
-            with serial.Serial(port=com_port, baudrate=115200, timeout=1.0) as ser:
-                ser.flushInput()
-                ser.flushOutput()
-                success_desc = f"成功開啟並關閉串列埠 {com_port}"
-                log_and_print(f"  - {success_desc}", log_file)
-                return True, success_desc
-        except serial.SerialException as se:
-            status_desc = f"pyserial 功能正常 (連接 {com_port} 狀態: {se})"
-            log_and_print(f"  - [資訊] {status_desc}", log_file)
-            return True, status_desc
-    except ImportError as e:
-        err_msg = f"找不到 pyserial 套件: {e}"
-        log_and_print(f"  [FAIL] {err_msg}", log_file)
-        return False, err_msg
-    except Exception as e:
-        err_msg = f"pyserial 檢驗異常: {e}"
-        log_and_print(f"  [FAIL] {err_msg}", log_file)
-        return False, err_msg
-
-
-def test_pysnmp_module(target_ip: str, community: str, log_file: str) -> Tuple[bool, str]:
-    """檢驗 4: pysnmp、pyasn1 與 pycryptodomex 是否相容且能發出 SNMP 請求"""
-    log_and_print(f"\n[測試 4/6] 檢驗 pysnmp/pyasn1 功能 (目標: {target_ip}, Community: {community})...", log_file)
-    try:
-        import Cryptodome
-        log_and_print(f"  - pycryptodomex (Cryptodome) 版本: {getattr(Cryptodome, '__version__', '未知')}", log_file)
-        
-        import pysnmp
-        import pyasn1
-        log_and_print(f"  - pysnmp 模組版本: {getattr(pysnmp, '__version__', '未知')}", log_file)
-        log_and_print(f"  - pyasn1 模組版本: {getattr(pyasn1, '__version__', '未知')}", log_file)
-        
-        import pyasn1.compat.octets
-        log_and_print("  - pyasn1.compat.octets 核心相容模組載入正常", log_file)
-        
-        from pysnmp.hlapi import (
-            SnmpEngine,
-            CommunityData,
-            UdpTransportTarget,
-            ContextData,
-            ObjectType,
-            ObjectIdentity,
-            getCmd
-        )
-        log_and_print("  - pysnmp.hlapi.SnmpEngine 與同步 getCmd 函式導出正常", log_file)
-        
-        log_and_print(f"  - 正在對 {target_ip} 構造 SNMPv2c GetRequest (OID: 1.3.6.1.2.1.1.1.0)...", log_file)
-        
-        engine = SnmpEngine()
-        target = UdpTransportTarget((target_ip, 161), timeout=1.0, retries=0)
-        community_data = CommunityData(community, mpModel=1)  # SNMPv2c
-        
-        iterator = getCmd(
-            engine,
-            community_data,
-            target,
-            ContextData(),
-            ObjectType(ObjectIdentity('1.3.6.1.2.1.1.1.0'))  # sysDescr
-        )
-        errorIndication, errorStatus, errorIndex, varBinds = next(iterator)
-        
-        if errorIndication:
-            resp_info = f"SNMP 引擎與編碼完全正常 (通訊回應: {errorIndication})"
-            log_and_print(f"  - {resp_info}", log_file)
-            return True, resp_info
-        elif errorStatus:
-            resp_info = f"SNMP 收到 Agent 錯誤狀態: {errorStatus.prettyPrint()}"
-            log_and_print(f"  - {resp_info}", log_file)
-            return True, resp_info
-        else:
-            val_str = ', '.join([f"{varBind[0]} = {varBind[1]}" for varBind in varBinds])
-            resp_info = f"成功取得 SNMP 回應數據: {val_str}"
-            log_and_print(f"  - {resp_info}", log_file)
-            return True, resp_info
-            
-    except ImportError as e:
-        err_msg = f"SNMP 相依模組匯入失敗 (可能存在版本衝突或遺失): {e}"
-        log_and_print(f"  [FAIL] {err_msg}", log_file)
-        return False, err_msg
-    except Exception as e:
-        err_msg = f"pysnmp 檢驗異常: {e}"
-        log_and_print(f"  [FAIL] {err_msg}", log_file)
-        return False, err_msg
-
-
 def test_scapy_module(log_file: str) -> Tuple[bool, str]:
-    """檢驗 5: scapy 封包建構與解碼功能 (選用套件)"""
-    log_and_print(f"\n[測試 5/6] 檢驗 scapy 封包建構與解析功能 (選用模組)...", log_file)
+    """檢驗 2: scapy 封包建構與解碼功能 (選用套件)"""
+    log_and_print(f"\n[測試 2/5] 檢驗 scapy 封包建構與解析功能 (選用模組)...", log_file)
     try:
         import scapy
         log_and_print(f"  - scapy 模組版本: {getattr(scapy, '__version__', '未知')}", log_file)
@@ -262,11 +130,79 @@ def test_scapy_module(log_file: str) -> Tuple[bool, str]:
         return False, err_msg
 
 
+def test_icmplib_module(target_ip: str, log_file: str) -> Tuple[bool, str]:
+    """檢驗 3: icmplib 是否能正常發送 ICMP Echo 封包並獲取回傳統計"""
+    log_and_print(f"\n[測試 3/5] 檢驗 icmplib 網路 Ping 功能 (目標 IP: {target_ip})...", log_file)
+    try:
+        import icmplib
+        log_and_print(f"  - icmplib 模組版本: {getattr(icmplib, '__version__', '未知')}", log_file)
+        
+        log_and_print(f"  - 正在向 {target_ip} 發送 Ping 測試封包...", log_file)
+        host_stat = icmplib.ping(target_ip, count=2, interval=0.5, timeout=1.5)
+        
+        if host_stat.is_alive:
+            detail = f"Ping 回應正常 (平均延遲: {host_stat.avg_rtt:.2f} ms, 丟包率: {host_stat.packet_loss * 100:.0f}%)"
+            log_and_print(f"  - {detail}", log_file)
+            return True, detail
+        else:
+            detail = f"主機無回應 (丟包率: 100%)，但 icmplib 封包發送引擎運作正常"
+            log_and_print(f"  - [資訊] {detail}", log_file)
+            return True, detail
+    except ImportError as e:
+        err_msg = f"找不到 icmplib 套件: {e}"
+        log_and_print(f"  [FAIL] {err_msg}", log_file)
+        return False, err_msg
+    except Exception as e:
+        err_msg = f"icmplib 執行異常: {e}"
+        log_and_print(f"  [FAIL] {err_msg}", log_file)
+        return False, err_msg
+
+
+def test_pyserial_module(com_port: str, log_file: str) -> Tuple[bool, str]:
+    """檢驗 4: pyserial 是否能正常調用並掃描/開啟串列埠 (實體開啟失敗嚴格判定 FAIL)"""
+    log_and_print(f"\n[測試 4/5] 檢驗 pyserial 串口通訊功能 (目標: {com_port})...", log_file)
+    try:
+        import serial
+        import serial.tools.list_ports
+        log_and_print(f"  - pyserial 模組版本: {getattr(serial, '__version__', '未知')}", log_file)
+        
+        detected_ports = [p.device for p in serial.tools.list_ports.comports()]
+        log_and_print(f"  - 本機偵測到之實體 COM Port: {detected_ports if detected_ports else '無'}", log_file)
+        
+        # 若使用者主動略過實體開啟測試 (輸入 skip 或留空)
+        if not com_port or com_port.upper() == "SKIP":
+            status_desc = "pyserial 模組載入正常 (略過實體開啟測試)"
+            log_and_print(f"  - {status_desc}", log_file)
+            return True, status_desc
+            
+        # 若使用者指定了特定 COM Port，必須實體開啟成功才可判定 PASS
+        log_and_print(f"  - 嘗試開啟 {com_port} (Baudrate: 115200)...", log_file)
+        try:
+            with serial.Serial(port=com_port, baudrate=115200, timeout=1.0) as ser:
+                ser.flushInput()
+                ser.flushOutput()
+                success_desc = f"成功開啟並關閉串列埠 {com_port}"
+                log_and_print(f"  - {success_desc}", log_file)
+                return True, success_desc
+        except serial.SerialException as se:
+            err_desc = f"開啟串列埠 {com_port} 失敗: {se}"
+            log_and_print(f"  [FAIL] {err_desc}", log_file)
+            return False, err_desc
+    except ImportError as e:
+        err_msg = f"找不到 pyserial 套件: {e}"
+        log_and_print(f"  [FAIL] {err_msg}", log_file)
+        return False, err_msg
+    except Exception as e:
+        err_msg = f"pyserial 檢驗異常: {e}"
+        log_and_print(f"  [FAIL] {err_msg}", log_file)
+        return False, err_msg
+
+
 def test_spirent_module(chassis_ip: str, tx_port: str, rx_port: str, duration_sec: int, log_file: str) -> Tuple[bool, str]:
-    """檢驗 6: Spirent TestCenter 1 Tx 1 Rx 打流與統計檢驗 (遵循 SKILL.md Rule 5 延遲載入 與 Rule 10 配對原則)"""
-    log_and_print(f"\n[測試 6/6] 檢驗 Spirent TestCenter 儀器流量控制 (1 Tx 1 Rx)...", log_file)
+    """檢驗 5: Spirent TestCenter 1 Tx 1 Rx 打流與統計檢驗 (遵循 SKILL.md Rule 5 延遲載入 與 Rule 10 配對原則)"""
+    log_and_print(f"\n[測試 5/5] 檢驗 Spirent TestCenter 儀器流量控制 (1 Tx 1 Rx)...", log_file)
     
-    # [步驟 6.1] 動態載入 Spirent TestCenter API 核心 (遵循 SKILL.md Rule 5)
+    # [步驟 5.1] 動態載入 Spirent TestCenter API 核心 (遵循 SKILL.md Rule 5)
     log_and_print("  - 正在載入 Spirent TestCenter API 與 Tcl 核心 (請稍候)...", log_file)
     try:
         import utils.pythontool as pt
@@ -295,15 +231,14 @@ def test_spirent_module(chassis_ip: str, tx_port: str, rx_port: str, duration_se
         stc_version = f"未知 (讀取失敗: {e})"
         log_and_print(f"  - Spirent TestCenter API 版本: {stc_version}", log_file)
 
-    # [步驟 6.2] 若使用者選擇略過實體機箱連線 (skip)
+    # [步驟 5.2] 若使用者選擇略過實體機箱連線 (skip)
     if not chassis_ip or chassis_ip.upper() == "SKIP":
         status_desc = f"Spirent TestCenter API (v{stc_version}) 與 Tcl 引擎載入成功 (略過實體機箱連線)"
         log_and_print(f"  - [資訊] {status_desc}", log_file)
         return True, status_desc
 
-    # [步驟 6.3] 實體機箱連線與 1 Tx 1 Rx 發流測試
+    # [步驟 5.3] 實體機箱連線與 1 Tx 1 Rx 發流測試
     log_and_print(f"  - 正在連線至 Spirent 機箱 {chassis_ip}...", log_file)
-    # 使用安全 catch 呼叫 stc::connect 避免 tool.tcl 內的 exit 直接中斷程式
     connect_cmd = f'if {{[catch {{stc::connect {chassis_ip}}} err]}} {{set ret "FAIL: $err"}} else {{set ret "OK"}}'
     ret = tclsh.eval(connect_cmd)
     if ret.startswith("FAIL:"):
@@ -350,7 +285,6 @@ def test_spirent_module(chassis_ip: str, tx_port: str, rx_port: str, duration_se
                         pass
 
         # 依 SKILL.md Rule 10：兩端剛好各配對 1 個 StreamBlock，嚴防 invalid handle 陷阱！
-        # 若 RX 埠未配置 StreamBlock，tool.tcl 的 getdata 會取得空字串 Handle "" 導致 stc::get 崩潰
         sb0 = pt.CreateStreamBlock(port_tx_obj, StreamBlock, Frame)
         sb1 = pt.CreateStreamBlock(port_rx_obj, StreamBlock, Frame1)
         pt.Generator(port_tx_obj, Generatortype)
@@ -434,18 +368,17 @@ def main():
     # [Phase 1] 參數蒐集與選單互動
     features = {
         "1": "utils 專案核心共用庫 (可編輯模式匯入檢驗)",
-        "2": "icmplib 網路連線探測 (Ping 功能測試)",
-        "3": "pyserial 串列通訊控制 (COM Port 掃描與開啟測試)",
-        "4": "pysnmp + pyasn1 網路設備管理 (SNMPv2c/v3 查詢測試)",
-        "5": "scapy 網路封包建構 (封包組裝與解析測試 - 選用)",
-        "6": "Spirent TestCenter 儀器測試 (1 Tx 1 Rx 打流與統計檢驗)"
+        "2": "scapy 網路封包建構 (二/三/四層封包組裝與解析測試)",
+        "3": "icmplib 網路連線探測 (Ping 功能測試)",
+        "4": "pyserial 串列通訊控制 (COM Port 掃描與開啟測試)",
+        "5": "Spirent TestCenter 儀器測試 (1 Tx 1 Rx 打流與統計檢驗)"
     }
     
     print("\n可用的檢驗項目清單：")
     for key, name in sorted(features.items()):
         print(f"  [{key}] {name}")
         
-    choice_input = input("\n請選擇要檢驗的項目 (例如單選: 2, 多選: 1,2,4,6, 直接 Enter 預設全部): ").strip()
+    choice_input = input("\n請選擇要檢驗的項目 (例如單選: 2, 多選: 1,2,4, 直接 Enter 預設全部): ").strip()
     
     if not choice_input:
         selected_keys = sorted(features.keys())
@@ -463,19 +396,13 @@ def main():
     
     # 依選定之項目動態蒐集必要參數 (避免詢問無關參數)
     target_ip = "127.0.0.1"
-    if "2" in selected_keys or "4" in selected_keys:
-        ip_in = input("\n請輸入測試目標 IP (直接 Enter 預設 127.0.0.1): ").strip()
+    if "3" in selected_keys:
+        ip_in = input("\n請輸入 Ping 測試目標 IP (直接 Enter 預設 127.0.0.1): ").strip()
         if ip_in:
             target_ip = ip_in
             
-    community = "public"
-    if "4" in selected_keys:
-        comm_in = input("請輸入 SNMP Community String (直接 Enter 預設 public): ").strip()
-        if comm_in:
-            community = comm_in
-            
     com_port = ""
-    if "3" in selected_keys:
+    if "4" in selected_keys:
         avail_ports = get_available_com_ports()
         print(f"\n目前系統偵測到可用 COM Port: {avail_ports if avail_ports else '無'}")
         port_prompt = "請輸入欲測試之 COM Port (例如 COM1，直接 Enter 依 SKILL.md 自動詢問，輸入 skip 略過實體開啟): "
@@ -492,7 +419,7 @@ def main():
     spirent_tx = "1/1"
     spirent_rx = "1/2"
     spirent_duration = 3
-    if "6" in selected_keys:
+    if "5" in selected_keys:
         print("\n--- Spirent TestCenter 參數設定 ---")
         ch_in = input("請輸入 Spirent 機箱 IP (直接 Enter 預設 10.123.38.202，輸入 skip 僅驗證 API 載入): ").strip()
         if ch_in.lower() == "skip":
@@ -531,20 +458,17 @@ def main():
     
     if "1" in selected_keys:
         results["utils 核心模組"] = test_utils_module(log_file)
-        
+
     if "2" in selected_keys:
-        results["icmplib Ping 功能"] = test_icmplib_module(target_ip, log_file)
+        results["scapy 封包建構功能"] = test_scapy_module(log_file)
         
     if "3" in selected_keys:
-        results["pyserial 串列功能"] = test_pyserial_module(com_port, log_file)
+        results["icmplib Ping 功能"] = test_icmplib_module(target_ip, log_file)
         
     if "4" in selected_keys:
-        results["pysnmp/pyasn1 SNMP 功能"] = test_pysnmp_module(target_ip, community, log_file)
-        
-    if "5" in selected_keys:
-        results["scapy 封包建構功能"] = test_scapy_module(log_file)
+        results["pyserial 串列功能"] = test_pyserial_module(com_port, log_file)
 
-    if "6" in selected_keys:
+    if "5" in selected_keys:
         results["Spirent 1Tx1Rx 測試"] = test_spirent_module(
             chassis_ip, spirent_tx, spirent_rx, spirent_duration, log_file
         )

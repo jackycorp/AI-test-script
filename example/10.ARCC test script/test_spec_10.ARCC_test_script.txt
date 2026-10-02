@@ -1,0 +1,51 @@
+﻿# ==============================================================================
+# ARCC (Auto Ring Coupling & Control) 自動化測試套件規格表 (test_spec.txt)
+# ==============================================================================
+
+[測試套件名稱]
+名稱: ARCC 自動化測試腳本套件 (10.ARCC test script)
+用途: 針對 ARCC (Auto Ring Coupling & Control) 網路架構進行環網防迴圈 (Looping)、
+      拓撲切換與故障恢復效能 (Performance) 以及長時間耦合/解耦合與重啟可靠度 (Reliability) 之全自動化驗證。
+日誌目錄: test result/10.ARCC test script_result/result.txt (自動集中保存)
+
+---
+
+[腳本架構與執行方式總覽]
+
+本資料夾內包含 9 支測試腳本與 1 支批次執行機器人 (batch_test_runner.py)：
+1. 所有腳本均可獨立（Standalone）手動執行，亦可透過 batch_test_runner.py 自動依序批次執行。
+2. 所有腳本全面符合 SKILL.md 規範：
+   - 跨目錄動態向上搜尋根目錄與共用庫 (Rule 14)
+   - 虛擬環境自動跳轉防呆機制 (Rule 15)
+   - Spirent TestCenter API 延遲載入機制 (Rule 5 Lazy Import)
+   - 雙端配對 1 StreamBlock 與建立前防呆清除 (Rule 10)
+   - 全域統計清除 (Rule 6 stc::perform ResultsClearAll)
+   - 資源必定安全釋放 (Rule 11 try...finally)
+   - 集中式日誌路徑輸出 (Rule 13)
+
+---
+
+[測試腳本清單與對照規格表]
+
+| 編號 | 腳本檔案名稱 | 測試類別 | 批次執行 | 測試目的與驗證機制 | 預設埠口 / 參數 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **1** | `Looping_Test_Couple_Decouple_analyze.py` | 環網防迴圈 | **包含** (1/7) | 分別驗證 DeCouple (tx) 與 Couple (t-) 過程無 Looping (Port 0 Rx = 0) 且 Tx/Rx 封包數嚴格匹配。 | Spirent: 4/3, 8/15<br>參數: COM Port, 次數, 延遲秒數 |
+| **2** | `Looping_Test_Master change.py` | 環網防迴圈 | **包含** (2/7) | 透過 Telnet 切換 Master (Enable) 與 Slave (Disable)，驗證 Turbo Ring 狀態正確切換且流量無 Looping。 | Spirent: 4/3, 8/15<br>參數: 次數, 目標 IP |
+| **3** | `Looping_Test_Reboot.py` | 環網防迴圈 | **包含** (3/7) | 打流量期間透過 Telnet 發送重啟指令 (re)，驗證 DUT 重啟開機過程無 Looping (Port 0 Rx = 0)。 | Spirent: 8/15, 8/16<br>參數: 次數, 開機等待秒數, 目標 IP |
+| **4** | `Performance_Test_Couple.py` | 效能測試 | **包含** (4/7) | 測試 ARCC 耦合恢復時間 (COUP 時間)。透過精確時間戳 T2-T1 與 Spirent 收包數除以 FPS 計算收斂秒數與毫秒。 | Spirent: 8/15, 8/16<br>參數: COM Port, 次數 |
+| **5** | `Performance_Test_Link down_up.py` | 效能測試 | **包含** (5/7) | 發送 Link Down 與 Link Up 指令，打雙向流量計算最大丟包數 (Tx - Rx)，精確評估斷線與恢復之收斂封包量。 | Spirent: 8/15, 8/16<br>參數: COM Port, 次數, Down/Up 指令 |
+| **6** | `Performance_Test_Power down_up.py` | 效能測試 | **包含** (6/7) | 發送 Power Off 與 Power On 指令，打雙向流量計算斷電與恢復開機期間之收斂丟包量。 | Spirent: 8/15, 8/16<br>參數: COM Port, 次數, 開機等待秒數, On/Off 指令 |
+| **7** | `Reliability_Test_Couple_Decouple.py` | 可靠度測試 | **包含** (7/7) | 循環執行 DeCouple (tx) -> 等待收斂 -> Couple (t-) -> 等待收斂 -> 雙向打流量，驗證長期拓撲切換後資料轉發 100% 完整無掉包。 | Spirent: 8/15, 8/16<br>參數: COM Port, 次數, 延遲秒數 |
+| **8** | `Looping_Test_Couple_Decouple_g1&g2 switch.py` | 環網防迴圈 | *獨立專用* | 連續執行 tx -> t\ -> tx -> t- 複雜耦合路徑切換，驗證特殊拓撲轉移下無封包迴圈現象 (有特定拓撲需求時單獨執行)。 | Spirent: 1/12, 8/15<br>參數: COM Port, 次數, 延遲秒數 |
+| **9** | `Reliability_All DUTs power Down_up Test.py` | 可靠度測試 | *獨立專用* | 控制多組電源插座 (如 p1 to p4) 依序斷電與階梯式間隔 0.5s 開機，待全部開機後雙向打流驗證全拓撲復原完整性。 | Spirent: 8/15, 8/16<br>參數: COM Port, 次數, 開機等待秒數, 插座範圍 |
+| **10**| `batch_test_runner.py` | 批次執行機器人 | - | 一鍵啟動集中參數配置精靈，依序自動執行上述 7 支主流測試，具備會話快取重置與異常隔離防護，產出整合測試總表。 | - |
+
+---
+
+[批次執行機器人 (batch_test_runner.py) 操作指引]
+
+1. 執行指令：
+   python batch_test_runner.py
+2. 啟動後，依序由防呆互動選單輸入各程式之專屬測試參數 (COM Port, Iteration, Wait Time 等)。
+3. 全部確認後按下 [Enter]，機器人將自動接管 Spirent 與測試設備，依序執行 1~7 號測試。
+4. 每支測試完成後自動於控制台顯示該階段結果，全部測試結束後顯示色彩鮮明的彙總狀態報告 (PASS/FAIL/ERROR 與各階段耗時)。
