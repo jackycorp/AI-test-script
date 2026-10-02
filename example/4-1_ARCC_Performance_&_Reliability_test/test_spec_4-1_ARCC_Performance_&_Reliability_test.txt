@@ -3,10 +3,11 @@
 # ==============================================================================
 
 [測試套件名稱]
-名稱: ARCC 自動化測試腳本套件 (10.ARCC test script)
+名稱: ARCC 自動化測試腳本套件 (4-1_ARCC_Performance_&_Reliability_test)
 用途: 針對 ARCC (Auto Ring Coupling & Control) 網路架構進行環網防迴圈 (Looping)、
       拓撲切換與故障恢復效能 (Performance) 以及長時間耦合/解耦合與重啟可靠度 (Reliability) 之全自動化驗證。
-日誌目錄: test result/10.ARCC test script_result/result.txt (自動集中保存)
+日誌目錄: test result/4-1_ARCC_Performance_&_Reliability_test_result/result.txt (自動集中保存)
+
 
 ---
 

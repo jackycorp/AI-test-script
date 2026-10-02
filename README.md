@@ -1,4 +1,4 @@
-# AI 自動化測試框架 (AI Test Automation Framework)
+﻿# AI 自動化測試框架 (AI Test Automation Framework)
 
 本專案提供標準化、模組化的硬體與網路自動化測試框架（支援 Serial、Telnet、SNMP、Ping 以及 Spirent 流量測試）。專案具備環境隔離、路徑動態相容機制，兼顧「**純執行測試**」與「**二次開發**」兩大需求。
 
@@ -24,12 +24,11 @@ AI_test_framework/                          <-- 專案根目錄
 │   ├── pythontool.py                       <-- Spirent TestCenter 控制介面
 │   └── dictionary_parameters.py
 │
-├── example/                                <-- [官方測試範例庫] 保持純淨源碼，可自由建立多層子資料夾
-│   ├── 1.Cold start Recovery Test/
-│   ├── 2.Link_off_on_Recovery_Test/
-│   ├── 8.Warm_start_Recovery_Test/
-│   └── 11.ARCC Test/                       <-- (多層子目錄範例，保證正常執行)
-│       └── Couple_decouple_looping_test.py
+├── example/                                <-- [官方測試範例庫] 保持純淨源碼，依大類編號管理
+│   ├── example.txt                         <-- [範例索引手冊] 詳細分類結構與完整清單請參閱此檔
+│   ├── 0-1_Enviroment_test/
+│   ├── 1-1_Cold_Start_Recovery_Test/
+│   └── ...                                 <-- 其餘案例 (1-2 ~ 4-1) 請參閱 example/example.txt
 │
 ├── my_scripts/                             <-- [個人自訂開發區] (已設為 .gitignore，升級零衝突)
 │   ├── templates/                          <-- [官方範本庫] (保留進 Git，就地參考複製)
@@ -40,7 +39,7 @@ AI_test_framework/                          <-- 專案根目錄
 │
 └── test result/                            <-- [集中測試輸出區] (已設為 .gitignore，不污染 Git)
     ├── .gitkeep
-    └── 1.Cold start Recovery Test_result/  <-- [案例專屬輸出目錄] (自動建立同名資料夾並加 _result)
+    └── 1-1_Cold_Start_Recovery_Test_result/  <-- [案例專屬輸出目錄] (自動建立同名資料夾並加 _result)
         ├── result.txt                      <-- 本次測試結果日誌
         └── captures/                       <-- 抓包檔案集中存放於此子階層 (如 .pcap)
 ```
@@ -52,7 +51,7 @@ AI_test_framework/                          <-- 專案根目錄
 若您僅需要執行現成的測試案例，無需具備 Python 開發經驗，也不用擔心電腦原有的 Python 套件衝突或版本問題：
 
 ### 💡 執行個別測試的「最小必要檔案清單」（免下載整包方案）
-若其他測試電腦**只想執行特定測試**（例如僅跑 `8.Warm_start_Recovery_Test`），其實**無需下載所有案例**，只要保留以下 3 樣檔案即可獨立運行：
+若其他測試電腦**只想執行特定測試**（例如僅跑 `1-2_Warm_Start_Recovery_Test`），其實**無需下載所有案例**，只要保留以下 3 樣檔案即可獨立運行：
 
 1. **環境啟動檔案 (專案根目錄)**：
    * `setup.bat`（首次雙擊自動建立隔離環境）
@@ -80,9 +79,10 @@ AI_test_framework/                          <-- 專案根目錄
 直接切換至目標測試資料夾，使用一般 `python` 指令執行即可：
 
 ```cmd
-cd "example\8.Warm_start_Recovery_Test"
+cd "example\1-2_Warm_Start_Recovery_Test"
 python Warm_start_Recovery_Test.py
 ```
+
 
 *提示：本專案所有腳本皆已內建虛擬環境自動跳轉機制，執行時會自動切換至專屬 `.venv`，無需手動輸入 `activate` 即可直接執行。*
 

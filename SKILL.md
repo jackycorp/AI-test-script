@@ -1,4 +1,4 @@
-# 測試腳本標準開發框架與寫法規範 (SKILL.md)
+﻿# 測試腳本標準開發框架與寫法規範 (SKILL.md)
 
 本文件定義此工作區中所有自動化測試腳本的**標準編寫框架**與**開發規範**。未來新增或重構測試腳本時，必須嚴格遵守此規範，以確保程式碼風格一致、資源妥善清理且日誌格式標準。
 
@@ -98,7 +98,7 @@
    - ⚠️ **命名空間污染防範**：動態載入 `utils.pythontool` 時，必須過濾掉其內部的路徑變數（如 `current_dir`），避免覆蓋主腳本的全域路徑。日誌檔名一律直接寫為工作區根目錄相對路徑 `log_filename = "result.txt"`。
 14. **跨層級目錄相容原則 (Cross-Directory Compatibility Principle)**：
    - ⚠️ **跨層級動態向上搜尋 `utils` 原則 (全目錄相容)**：
-     無論測試程式放置於工作區根目錄 `test script/`、次級目錄 `example/`、或 `example/` 更下層子資料夾（如 `example/Cold start Recovery Test/`），**嚴禁使用寫死固定階層的 `../..`**。所有腳本頭部必須統一採用「動態向上遞迴搜尋法」，自動定位包含 `utils/comm_helper.py` 的目錄並加入 `sys.path`，確保不論在哪一層目錄執行均可順利載入共用模組：
+     無論測試程式放置於工作區根目錄 `test script/`、次級目錄 `example/`、或 `example/` 更下層子資料夾（如 `example/1-1_Cold_Start_Recovery_Test/`），**嚴禁使用寫死固定階層的 `../..`**。所有腳本頭部必須統一採用「動態向上遞迴搜尋法」，自動定位包含 `utils/comm_helper.py` 的目錄並加入 `sys.path`，確保不論在哪一層目錄執行均可順利載入共用模組：
      ```python
      # 動態向上搜尋包含 utils 的根目錄，確保無論放置於哪一層子目錄均能正常引入 utils
      SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))

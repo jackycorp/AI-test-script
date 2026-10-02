@@ -1,0 +1,33 @@
+﻿--------------------structure ---------------------
+0.Enviroment
+0-1_Enviroment_test
+
+1.Recovery Time
+1-1_Cold_Start_Recovery_Test
+1-2_Warm_Start_Recovery_Test
+1-3_Link_off_on_Recovery_Test
+
+2.Others
+2-1_Warm_start_and_debuglog_collect
+2-2_Spirent_Random_SA_Traffic_Test
+
+3.Customer
+3-1_PAS-8620_Valencia_SNMP_polling
+3-2_PAS-8620_Valencia_memory_fdb_polling
+3-3_PAS-8620_SNMP_polling_ID_0_test
+
+4.ARCC
+4-1_ARCC_Performance_&_Reliability_test
+---------------------------------------------------
+
+測試項目簡介：
+0-1_Enviroment_test                    : 檢驗 Python 環境與各核心相依套件 (Serial, Ping, Spirent 等)
+1-1_Cold_Start_Recovery_Test           : 設備斷電冷啟動之網路拓撲恢復時間測試
+1-2_Warm_Start_Recovery_Test           : 設備軟體重啟 (Warm Start) 之網路拓撲恢復時間測試
+1-3_Link_off_on_Recovery_Test          : 實體線路斷線與復原 (Link Down/Up) 之收斂效能測試
+2-1_Warm_start_and_debuglog_collect    : 設備重啟時自動擷取並收集除錯診斷日誌 (Debug Log)
+2-2_Spirent_Random_SA_Traffic_Test     : 隨機來源 MAC 流量發送與 MAC Table 學習測試
+3-1_PAS-8620_Valencia_SNMP_polling     : PAS-8620 長時間 SNMP OID 狀態輪詢測試
+3-2_PAS-8620_Valencia_memory_fdb_polling : PAS-8620 記憶體使用率與 FDB 轉發表監控測試
+3-3_PAS-8620_SNMP_polling_ID_0_test    : PAS-8620 在 SNMP 輪詢索引為 ID 0 時之邊界測試
+4-1_ARCC_Performance_&_Reliability_test : ARCC 環網架構之防迴圈 (Looping)、效能 (Performance) 與可靠度 (Reliability) 測試套件
