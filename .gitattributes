@@ -1,0 +1,14 @@
+# Set default behavior, in case users don't have core.autocrlf set.
+* text=auto
+
+# Explicitly declare text files you always want to be normalized and converted
+# to native line endings on checkout.
+*.py text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.csv text eol=lf
+*.toml text eol=lf
+
+# Batch files must always have CRLF endings in checkout and inside Git archives (zip)
+*.bat text eol=crlf
+*.cmd text eol=crlf

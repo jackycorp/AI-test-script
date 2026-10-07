@@ -1,4 +1,4 @@
-﻿# AI 自動化測試框架 (AI Test Automation Framework)
+# AI 自動化測試框架 (AI Test Automation Framework)
 
 本專案提供標準化、模組化的硬體與網路自動化測試框架（支援 Serial、Telnet、SNMP、Ping 以及 Spirent 流量測試）。專案具備環境隔離、路徑動態相容機制，兼顧「**純執行測試**」與「**二次開發**」兩大需求。
 
@@ -9,6 +9,7 @@
 ```text
 AI_test_framework/                          <-- 專案根目錄
 │
+├── .gitattributes                          <-- [換行防護] 強制鎖定批次檔為 CRLF，防範網頁下載 ZIP 導致的批次檔解析錯誤
 ├── .gitignore                              <-- [版控防線] 排除虛擬環境、測試結果、封包與個人自訂腳本
 ├── AGENTS.md                               <-- [AI 開發規範] 鎖定 Git Push 授權、套件相依性與環境相容準則
 ├── README.md                               <-- [主說明書] 快速上手、目錄架構與執行/開發指南
